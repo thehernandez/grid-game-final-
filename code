@@ -1,0 +1,267 @@
+import pygame
+import math
+from player import player
+from fireball import fireball
+from enemy import enemy
+pygame.init()
+pygame.display.set_caption("top down grid game")# window tile
+screen = pygame.display.set_mode((1200,900))#game screen
+clock = pygame.time.Clock()#set up clock
+gameover = False#variable game loop 
+game_sound = pygame.mixer.Sound('gm_sound1.mp3')
+
+#instantiatre player
+p1 = player()
+ball = fireball()
+michael = enemy()
+ticker = 0 
+xpos = 0
+ypos = 0
+mousePos = (xpos, ypos)
+mouseDown = False
+
+#game state variable
+state = 1 #1 is menu, 2 is playing, 3 is credits
+button1 = False
+#add more buttons here!
+quitGame = False
+#constants
+LEFT = 0
+RIGHT = 1
+UP = 2
+DOWN = 3
+SPACE = 4
+ENTER = 5
+keys = [False, False, False, False, False, False] # this list hgoldd whether each key has been pressed 
+mapNum = 1
+
+map = [[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+       [2,1,1,1,1,2,2,1,1,0,0,1,1,1,1,2,2,1,1,2,2,2,2,2],
+       [2,1,1,1,1,2,2,1,1,0,0,1,1,1,1,2,2,1,1,3,3,3,3,2],
+       [2,0,0,2,2,2,2,0,0,0,0,0,0,2,2,2,2,0,0,3,3,3,3,2],
+       [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,2],
+       [2,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,3,3,3,3,2],
+       [2,3,2,3,3,3,2,2,0,0,0,3,2,3,3,3,2,2,0,3,3,3,3,2],
+       [2,3,3,3,3,3,0,0,0,0,0,3,2,3,3,3,0,0,0,3,3,3,3,2],
+       [5,3,3,3,3,0,0,0,0,0,0,3,2,3,3,0,0,0,0,3,3,3,3,5],
+       [5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
+       [2,1,1,1,1,2,2,1,1,0,0,1,1,1,1,2,2,1,1,3,3,3,3,2],
+       [2,1,1,1,1,2,2,1,1,0,0,1,1,1,1,2,2,1,1,3,3,3,3,2],
+       [2,0,0,2,2,2,2,0,0,0,0,0,0,2,2,2,2,0,0,3,3,3,3,2],
+       [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,2],
+       [2,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,3,3,3,3,2],
+       [2,3,2,3,3,3,2,2,0,0,0,3,2,3,3,3,2,2,0,3,3,3,3,2],
+       [2,3,2,3,3,3,0,0,0,0,0,3,2,3,3,3,0,0,0,3,3,3,3,2],
+       [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]]
+
+map2 = [[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,5],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,5],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,5,5,3,3,3,3,3,3,3,3,3,3,3]]
+
+
+map3 = [[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,5],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,5],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+       [3,3,3,3,3,3,3,3,3,3,3,5,5,3,3,3,3,3,3,3,3,3,3,3]]
+
+
+brick = pygame.image.load('brick.png')
+dirt = pygame.image.load('dirt.png')
+grass = pygame.image.load('grass.png')
+
+
+
+    
+def dist(x1, y1, x2, y2):
+    return math.sqrt((x1-x2)**2 + (y1-y2**2)**2)
+
+
+
+while not gameover:
+    game_sound.play()
+    clock.tick(60)#fps
+    ticker += 1
+    #input
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:#quit game if x is presed in top corner
+            gameover = True
+        if event.type == pygame.KEYDOWN:#quit game if x is presed in top corner
+            if event.key == pygame.K_LEFT:
+                keys[LEFT] = True
+            
+            elif event.key == pygame.K_RIGHT:
+                keys[RIGHT] = True
+            elif event.key == pygame.K_UP:
+                keys[UP] = True
+            elif event.key == pygame.K_DOWN:
+                keys[DOWN] = True
+            
+            if event.key == pygame.K_SPACE:
+                keys[SPACE] = True
+        
+        
+        elif  event.type == pygame.KEYUP:#quit game if x is presed in top corner
+            if event.key == pygame.K_LEFT:
+                keys[LEFT] = False
+            elif event.key == pygame.K_RIGHT:
+                keys[RIGHT] = False
+            elif event.key == pygame.K_UP:
+                keys[UP] = False
+            elif event.key == pygame.K_DOWN:
+                keys[DOWN] = False
+            
+            if event.key == pygame.K_SPACE:
+                keys[SPACE] = False
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        #keeps track of mouse position
+        if event.type == pygame.MOUSEMOTION:
+            mousePos = event.pos
+        #keeps track of mouse button
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouseDown = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            mouseDown = False
+        
+        #keyboard input (more needed for actual game)
+        if event.type == pygame.KEYDOWN: 
+            if event.key == pygame.K_q:
+                quitGame = True
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_q:
+                quitGame = False
+
+     #state 1: menu state!------------------------------
+    if state == 1 and mousePos[0]>100 and mousePos[0]<300 and mousePos[1]>400 and mousePos[1]<550:
+        button1 = True
+    else:
+        button1 = False
+            
+    if state == 1 and button1 == True and mouseDown == True:
+        state = 2
+    #state 2: playing state!---------------------------
+    if state == 2 and quitGame == True: #pressing quit takes you back to menu
+        state = 1
+    if state == 2:
+        if mapNum == 1:
+            if map[int((p1.ypos ) / 50)][int( (p1.xpos) / 50)] == 5:
+                mapNum =2
+                p1.xpos = 1100
+        if mapNum == 2:
+            if map2[int((p1.ypos ) / 50)][int( (p1.xpos) / 50)] == 5:
+                mapNum = 3
+                p1.ypos = 100
+        if mapNum == 3:
+            if map3[int((p1.ypos ) / 50)][int( (p1.xpos) / 50)] == 5:
+                mapNum =1
+                p1.xpos = 50
+    #pycals
+    if keys[SPACE] == True:
+        ball.shoot(p1.xpos, p1.ypos, p1.direction)
+    
+    if mapNum == 1:
+        michael.move(map, ticker, p1.xpos, p1.ypos)
+        michael.draw(screen)
+        michael.die(ball.xpos, ball.ypos)
+
+        #p1.die(michael.xpos, michael.ypos)
+        #p1.ouch(michael.xpos, michael.ypos)
+        p1.move(keys, map)
+        ball.move()
+        if keys[ENTER] == True and dist(p1.xpos, p1.ypos)<10:
+            n1.talk()
+    elif mapNum == 2:
+        michael.move(map2, ticker, p1.xpos, p1.ypos)
+        michael.draw(screen)
+        michael.die(ball.xpos, ball.ypos)
+        p1.move(keys, map)
+        ball.move()
+    #render section===========================================================================================================================
+    
+    #menu state-------------------------------
+    if state == 1:
+        screen.fill((230,100,100))# Clear the screen pink
+        if button1 == False:
+            pygame.draw.rect(screen, (100, 230, 100), (100, 400, 200, 150))
+        else:
+            pygame.draw.rect(screen, (200, 250, 200), (100, 400, 200, 150))
+        pygame.draw.rect(screen, (100, 230, 100), (400, 400, 200, 150))
+        pygame.draw.rect(screen, (100, 230, 100), (700, 400, 200, 150))
+    
+    #game state-------------------------------
+    if state == 2:
+        screen.fill((0,0,0))# Clear the screen green
+
+        if mapNum == 1:    #map
+            for i in range(len(map)):
+                for j in range(len(map[i])):
+                    if map[i][j] == 1:
+                        screen.blit(dirt, (j * 50, i * 50), (0, 0, 50, 50))
+                        
+                    if map[i][j] == 2:
+                        screen.blit(brick, (j * 50, i * 50), (0, 0, 50, 50))
+                        
+                    if map[i][j] == 3:
+                        screen.blit(grass, (j * 50, i * 50), (0, 0, 50, 50))
+                        
+
+
+        if mapNum == 2:    #map
+            for i in range(len(map)):
+                for j in range(len(map[i])):
+                    if map2[i][j] == 1:
+                        screen.blit(dirt, (j * 50, i * 50), (0, 0, 50, 50))
+                    if map2[i][j] == 2:
+                        screen.blit(brick, (j * 50, i * 50), (0, 0, 50, 50))
+                    if map2[i][j] == 3:
+                        screen.blit(grass, (j * 50, i * 50), (0, 0, 50, 50))
+
+        if mapNum == 3:    #map
+            for i in range(len(map)):
+                for j in range(len(map[i])):
+                    if map3[i][j] == 1:
+                        screen.blit(dirt, (j * 50, i * 50), (0, 0, 50, 50))
+                    if map3[i][j] == 2:
+                        screen.blit(brick, (j * 50, i * 50), (0, 0, 50, 50))
+                    if map3[i][j] == 3:
+                        screen.blit(grass, (j * 50, i * 50), (0, 0, 50, 50))
+        p1.draw(screen)
+        michael.draw(screen)
+        print("map num is", mapNum)
+        #more game stuff would be drawn here
+       
+    pygame.display.flip()# Update the display
+        
+    
+pygame.quit()
